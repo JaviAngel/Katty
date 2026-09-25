@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Para Katty 🌻</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌻</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=Montserrat:wght@300;400;600;700&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body {
+            width: 100%; height: 100%;
+            overflow: hidden;
+            font-family: 'Montserrat', sans-serif;
+            background: #0d0a05;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: none;
+        }
+        #bg {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            display: block;
+            z-index: 0;
+            cursor: grab;
+        }
+        #bg:active { cursor: grabbing; }
+
+        /* LOADER */
+        #loader-container {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: #0d0a05;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.8s ease-out, visibility 0.8s ease-out;
+        }
+        #loader-container.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+        .loader-content { text-align: center; }
+        .loader-flower {
+            font-size: 5rem;
+            display: inline-block;
+            animation: spinFlower 3s linear infinite;
+            filter: drop-shadow(0 0 30px rgba(255, 200, 60, 0.5));
+        }
+        @keyframes spinFlower {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(1.15); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+        .progress-bar-container {
+            width: 250px; height: 5px;
+            border: 1px solid #ffc83c;
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 30px auto 15px;
+        }
+        #progress-bar {
+            width: 0%; height: 100%;
+            background: linear-gradient(90deg, #ffc83c, #ffde7a);
+            border-radius: 5px;
+            transition: width 0.4s ease-out;
+        }
+        #progress-text { color: #ffde7a; font-weight: 300; letter-spacing: 3px; font-size: 0.9rem; }
+
+        /* PANTALLA INICIAL */
+        .intro-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            background: radial-gradient(circle at 50% 50%, rgba(30, 20, 5, 0.85), rgba(5, 3, 0, 0.95));
+            backdrop-filter: blur(10px);
+            transition: opacity 0.9s ease, visibility 0.9s ease;
+            cursor: pointer;
+        }
+        .intro-overlay.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+        .intro-flower {
+            font-size: 6rem;
+            margin-bottom: 2rem;
+            animation: floatFlower 3s ease-in-out infinite;
+            filter: drop-shadow(0 0 40px rgba(255, 200, 60, 0.6));
+        }
+        @keyframes floatFlower {
+            0%, 100% { transform: translateY(0) rotate(-5deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+        }
+        .intro-title {
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            font-size: 2.8rem;
+            text-align: center;
+            background: linear-gradient(135deg, #ffde7a, #ffc83c, #ffb347);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+            padding: 0 1rem;
+        }
+        .intro-subtitle {
+            color: #c9b088;
+            font-weight: 300;
+            font-size: 1rem;
+            letter-spacing: 3px;
+            margin-bottom: 2.5rem;
+            text-align: center;
+            padding: 0 1.5rem;
+        }
+        .intro-button {
+            background: linear-gradient(135deg, #ffc83c, #ffde7a);
+            color: #2a1a00;
+            padding: 1rem 2.5rem;
+            border-radius: 50px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            font-size: 0.95rem;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 10px 40px rgba(255, 200, 60, 0.4);
+            transition: transform 0.3s, box-shadow 0.3s;
+            text-transform: uppercase;
+        }
+        .intro-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 15px 50px rgba(255, 200, 60, 0.6);
+        }
+        .intro-button i { margin-right: 8px; }
+
+        /* MENSAJE FLOTANTE */
+        .message-popup {
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%) scale(0.5) rotate(-10deg);
+            z-index: 150;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            max-width: 90vw;
+        }
+        .message-popup.active {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1) rotate(0deg);
+            pointer-events: auto;
+        }
+        .message-card {
+            background: linear-gradient(145deg, #2a1f0a, #1a1205);
+            padding: 3rem 3.5rem;
+            border-radius: 30px;
+            box-shadow: 0 40px 100px rgba(0,0,0,0.9), 0 0 0 2px rgba(255, 200, 60, 0.4), 0 0 80px rgba(255, 200, 60, 0.2);
+            text-align: center;
+            position: relative;
+            border: 1px solid rgba(255, 200, 60, 0.15);
+            overflow: hidden;
+        }
+        .message-card::before {
+            content: '🌻';
+            position: absolute;
+            top: -30px; right: -20px;
+            font-size: 8rem;
+            opacity: 0.06;
+            transform: rotate(15deg);
+        }
+        .message-card::after {
+            content: '🌻';
+            position: absolute;
+            bottom: -40px; left: -20px;
+            font-size: 7rem;
+            opacity: 0.06;
+            transform: rotate(-15deg);
+        }
+        .message-flower-icon {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            display: inline-block;
+            animation: wiggle 2s ease-in-out infinite;
+        }
+        @keyframes wiggle {
+            0%, 100% { transform: rotate(-8deg); }
+            50% { transform: rotate(8deg); }
+        }
+        .message-card h2 {
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #ffde7a, #ffc83c, #ffb347);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1.5rem;
+        }
+        .message-card p {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 300;
+            font-size: 1.15rem;
+            line-height: 1.9;
+            color: #f0e6d0;
+            margin-bottom: 1.5rem;
+            max-width: 500px;
+            position: relative;
+            z-index: 2;
+        }
+        .message-card .highlight {
+            color: #ffde7a;
+            font-weight: 600;
+        }
+        .message-card .signature {
+            font-family: 'Dancing Script', cursive;
+            font-size: 2.2rem;
+            color: #ffc83c;
+            margin-top: 1rem;
+        }
+        .message-card .divider {
+            width: 80px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #ffc83c, transparent);
+            margin: 1.5rem auto;
+        }
+        .close-msg {
+            position: absolute;
+            top: 15px; right: 20px;
+            background: none;
+            border: none;
+            color: #c9b088;
+            font-size: 2rem;
+            cursor: pointer;
+            transition: color 0.3s, transform 0.3s;
+            z-index: 5;
+            line-height: 1;
+        }
+        .close-msg:hover { color: #ffc83c; transform: rotate(90deg); }
+
+        /* INSTRUCCIONES */
+        .hint-text {
+            position: fixed;
+            bottom: 5%;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 15;
+            color: #c9b088;
+            font-size: 0.85rem;
+            letter-spacing: 2px;
+            background: rgba(20, 12, 3, 0.6);
+            backdrop-filter: blur(10px);
+            padding: 0.7rem 1.8rem;
+            border-radius: 40px;
+            border: 1px solid rgba(255, 200, 60, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            pointer-events: none;
+            transition: opacity 0.5s;
+            text-align: center;
+        }
+        .hint-text i { color: #ffc83c; }
+        .hint-text.hidden { opacity: 0; }
+
+        @media (max-width: 768px) {
+            .intro-flower { font-size: 4.5rem; }
+            .intro-title { font-size: 2rem; }
+            .intro-subtitle { font-size: 0.85rem; letter-spacing: 2px; }
+            .message-card { padding: 2.2rem 1.8rem; }
+            .message-card h2 { font-size: 1.8rem; }
+            .message-card p { font-size: 1rem; }
+            .message-card .signature { font-size: 1.8rem; }
+            .hint-text { font-size: 0.7rem; padding: 0.5rem 1.2rem; }
+        }
+        @media (max-width: 480px) {
+            .intro-title { font-size: 1.6rem; }
+            .message-card { padding: 1.8rem 1.2rem; }
+            .message-card h2 { font-size: 1.5rem; }
+            .message-card p { font-size: 0.9rem; }
+            .close-msg { font-size: 1.6rem; top: 10px; right: 12px; }
+        }
+        ::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body>
+    <canvas id="bg"></canvas>
+    <audio id="bgMusic" loop preload="auto">
+    <source src="katty.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- LOADER -->
+    <div id="loader-container">
+        <div class="loader-content">
+            <div class="loader-flower">🌻</div>
+            <div class="progress-bar-container">
+                <div id="progress-bar"></div>
+            </div>
+            <div id="progress-text">Cargando <span id="progress-percent">0%</span></div>
+        </div>
+    </div>
+
+    <!-- PANTALLA INICIAL -->
+    <div class="intro-overlay" id="introOverlay">
+        <div class="intro-flower">🌻</div>
+        <h1 class="intro-title">Katty, tengo algo para ti</h1>
+        <p class="intro-subtitle">Un pequeño jardín hecho con cariño</p>
+        <button class="intro-button" id="startBtn">
+            <i class="fas fa-seedling"></i> Entrar al jardín
+        </button>
+    </div>
+
+    <!-- MENSAJE POPUP -->
+    <div class="message-popup" id="messagePopup">
+        <div class="message-card">
+            <button class="close-msg" id="closeMsg">&times;</button>
+            <div class="message-flower-icon">🌻</div>
+            <h2>Para ti, Katty</h2>
+            <p>
+                Como un girasol que siempre busca la luz, <br>
+                tú iluminas a quienes te rodean. <br><br>
+                <span class="highlight">Gracias por ser una amiga tan especial.</span><br>
+                Nunca dejes que se apague esa energía tan bonita que tienes. ✨
+            </p>
+            <div class="divider"></div>
+            <div class="signature">Con cariño, siempre...</div>
+        </div>
+    </div>
+
+    <!-- HINT -->
+    <div class="hint-text" id="hintText">
+        <i class="fas fa-hand-pointer"></i> Toca el girasol <i class="fas fa-arrow-up"></i>
+    </div>
+
+    <script type="importmap">
+        { "imports": { "three": "https://unpkg.com/three@0.166.0/build/three.module.js" } }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+
+        // DOM refs
+        const loaderContainer = document.getElementById('loader-container');
+        const progressBar = document.getElementById('progress-bar');
+        const progressPercent = document.getElementById('progress-percent');
+        const introOverlay = document.getElementById('introOverlay');
+        const startBtn = document.getElementById('startBtn');
+        const messagePopup = document.getElementById('messagePopup');
+        const closeMsg = document.getElementById('closeMsg');
+        const hintText = document.getElementById('hintText');
+
+        const bgMusic = document.getElementById('bgMusic');
+
+// Reproducir música cuando el usuario entra al jardín
+document.getElementById('startBtn').addEventListener('click', () => {
+    bgMusic.volume = 0.5; // Volumen al 50%
+    bgMusic.play().catch(err => console.log('Autoplay bloqueado:', err));
+}); 
+
+        // LOADER
+        let progress = 0;
+        const interval = setInterval(() => {
+            progress += Math.random() * 10;
+            if (progress > 95) progress = 95;
+            progressBar.style.width = progress + '%';
+            progressPercent.textContent = Math.floor(progress) + '%';
+        }, 200);
+
+        window.onload = () => {
+            clearInterval(interval);
+            progressBar.style.width = '100%';
+            progressPercent.textContent = '100%';
+            setTimeout(() => {
+                loaderContainer.classList.add('hidden');
+            }, 500);
+            init3D();
+        };
+
+        // THREE.JS
+        let renderer, camera, scene, sunflower;
+        let petals = [];
+        let particles = [];
+
+        function init3D() {
+            // Escena
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x0d0a05);
+            scene.fog = new THREE.FogExp2(0x0d0a05, 0.015);
+
+            camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 3, 14);
+
+            const canvas = document.querySelector('#bg');
+            renderer = new THREE.WebGLRenderer({ canvas, alpha: false, antialias: true });
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setClearColor(0x0d0a05, 1);
+
+            // Luces cálidas
+            const ambient = new THREE.AmbientLight(0xffddaa, 0.4);
+            scene.add(ambient);
+
+            const mainLight = new THREE.PointLight(0xffcc55, 3, 40);
+            mainLight.position.set(0, 5, 8);
+            scene.add(mainLight);
+
+            const warmLight = new THREE.PointLight(0xff9944, 1.5, 30);
+            warmLight.position.set(-6, 2, 4);
+            scene.add(warmLight);
+
+            const fillLight = new THREE.DirectionalLight(0xffeebb, 0.5);
+            fillLight.position.set(3, 8, 5);
+            scene.add(fillLight);
+
+            const backLight = new THREE.PointLight(0xffaa33, 1, 25);
+            backLight.position.set(4, -2, -6);
+            scene.add(backLight);
+
+            // ============================
+            // GIRASOL 3D
+            // ============================
+            sunflower = new THREE.Group();
+
+            // Centro del girasol (disco marrón)
+            const centerGeo = new THREE.SphereGeometry(1.1, 32, 32);
+            const centerMat = new THREE.MeshStandardMaterial({
+                color: 0x5a3a1a,
+                roughness: 0.95,
+                metalness: 0.05,
+                emissive: 0x2a1505,
+                emissiveIntensity: 0.3,
+            });
+            const center = new THREE.Mesh(centerGeo, centerMat);
+            center.scale.set(1, 1, 0.35);
+            sunflower.add(center);
+
+            // Semillas del centro (puntos más oscuros)
+            const seedGeo = new THREE.SphereGeometry(0.04, 8, 8);
+            const seedMat = new THREE.MeshStandardMaterial({ color: 0x1a0f05, roughness: 1 });
+            for (let i = 0; i < 120; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const r = Math.random() * 0.95;
+                const seed = new THREE.Mesh(seedGeo, seedMat);
+                seed.position.set(Math.cos(angle) * r, Math.sin(angle) * r, 0.37);
+                sunflower.add(seed);
+            }
+
+            // Pétalos amarillos (dos capas)
+            const petalCount = 22;
+            for (let layer = 0; layer < 2; layer++) {
+                const layerRadius = layer === 0 ? 1.15 : 1.05;
+                const layerScale = layer === 0 ? 1 : 0.75;
+                const layerTilt = layer === 0 ? 0 : 0.15;
+                
+                for (let i = 0; i < petalCount; i++) {
+                    const angle = (i / petalCount) * Math.PI * 2 + (layer * 0.14);
+                    
+                    // Forma del pétalo
+                    const petalShape = new THREE.Shape();
+                    petalShape.moveTo(0, 0);
+                    petalShape.bezierCurveTo(0.35, 0.3, 0.5, 0.9, 0, 1.6);
+                    petalShape.bezierCurveTo(-0.5, 0.9, -0.35, 0.3, 0, 0);
+                    
+                    const petalGeo = new THREE.ExtrudeGeometry(petalShape, {
+                        depth: 0.08,
+                        bevelEnabled: true,
+                        bevelThickness: 0.03,
+                        bevelSize: 0.03,
+                        bevelSegments: 3,
+                    });
+                    
+                    const petalMat = new THREE.MeshStandardMaterial({
+                        color: layer === 0 ? 0xffc83c : 0xffde7a,
+                        roughness: 0.6,
+                        metalness: 0.05,
+                        emissive: layer === 0 ? 0x553300 : 0x664400,
+                        emissiveIntensity: 0.25,
+                        side: THREE.DoubleSide,
+                    });
+                    
+                    const petal = new THREE.Mesh(petalGeo, petalMat);
+                    petal.position.set(
+                        Math.cos(angle) * layerRadius,
+                        Math.sin(angle) * layerRadius,
+                        layer === 0 ? 0.15 : 0.25
+                    );
+                    petal.rotation.z = angle - Math.PI / 2;
+                    petal.rotation.x = layerTilt;
+                    petal.scale.set(layerScale, layerScale, 1);
+                    petal.userData = { baseAngle: angle, baseZ: petal.position.z, layer };
+                    sunflower.add(petal);
+                    petals.push(petal);
+                }
+            }
+
+            sunflower.position.y = 0;
+            sunflower.scale.set(1.3, 1.3, 1.3);
+            scene.add(sunflower);
+
+            // Tallo
+            const stemGeo = new THREE.CylinderGeometry(0.12, 0.15, 5, 12);
+            const stemMat = new THREE.MeshStandardMaterial({ color: 0x2d5016, roughness: 0.8 });
+            const stem = new THREE.Mesh(stemGeo, stemMat);
+            stem.position.set(0, -3.2, -0.3);
+            scene.add(stem);
+
+            // Hojas del tallo
+            const leafGeo = new THREE.SphereGeometry(0.5, 12, 12);
+            const leafMat = new THREE.MeshStandardMaterial({ color: 0x3a6b1e, roughness: 0.8, side: THREE.DoubleSide });
+            
+            const leaf1 = new THREE.Mesh(leafGeo, leafMat);
+            leaf1.scale.set(1.4, 0.15, 0.7);
+            leaf1.position.set(0.8, -3.5, -0.3);
+            leaf1.rotation.z = -0.5;
+            scene.add(leaf1);
+
+            const leaf2 = new THREE.Mesh(leafGeo, leafMat);
+            leaf2.scale.set(1.3, 0.15, 0.7);
+            leaf2.position.set(-0.9, -4.5, -0.3);
+            leaf2.rotation.z = 0.5;
+            scene.add(leaf2);
+
+            // ============================
+            // PARTÍCULAS DORADAS (polen mágico)
+            // ============================
+            const particleCount = 400;
+            const particleGeo = new THREE.BufferGeometry();
+            const particlePos = new Float32Array(particleCount * 3);
+            const particleColors = new Float32Array(particleCount * 3);
+            const particleSizes = new Float32Array(particleCount);
+
+            for (let i = 0; i < particleCount; i++) {
+                particlePos[i * 3] = (Math.random() - 0.5) * 40;
+                particlePos[i * 3 + 1] = (Math.random() - 0.5) * 30;
+                particlePos[i * 3 + 2] = (Math.random() - 0.5) * 40;
+                
+                const gold = Math.random();
+                particleColors[i * 3] = 1.0;
+                particleColors[i * 3 + 1] = 0.7 + gold * 0.3;
+                particleColors[i * 3 + 2] = 0.2 + gold * 0.4;
+                
+                particleSizes[i] = Math.random() * 0.15 + 0.05;
+            }
+            particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePos, 3));
+            particleGeo.setAttribute('color', new THREE.BufferAttribute(particleColors, 3));
+            particleGeo.setAttribute('size', new THREE.BufferAttribute(particleSizes, 1));
+
+            const particleMat = new THREE.PointsMaterial({
+                size: 0.15,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.85,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false,
+                sizeAttenuation: true,
+            });
+
+            const particleSystem = new THREE.Points(particleGeo, particleMat);
+            scene.add(particleSystem);
+            particles.push(particleSystem);
+
+            // Partículas flotantes alrededor de la flor (tipo luciérnagas)
+            const fireflyCount = 60;
+            const fireflyGeo = new THREE.BufferGeometry();
+            const fireflyPos = new Float32Array(fireflyCount * 3);
+            const fireflyData = [];
+            
+            for (let i = 0; i < fireflyCount; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const radius = 3 + Math.random() * 5;
+                const height = (Math.random() - 0.5) * 8;
+                fireflyPos[i * 3] = Math.cos(angle) * radius;
+                fireflyPos[i * 3 + 1] = height;
+                fireflyPos[i * 3 + 2] = Math.sin(angle) * radius;
+                fireflyData.push({
+                    angle, radius, height,
+                    speed: 0.1 + Math.random() * 0.3,
+                    phase: Math.random() * Math.PI * 2,
+                    offsetY: Math.random() * Math.PI * 2,
+                });
+            }
+            fireflyGeo.setAttribute('position', new THREE.BufferAttribute(fireflyPos, 3));
+            
+            const fireflyMat = new THREE.PointsMaterial({
+                color: 0xffdd66,
+                size: 0.25,
+                transparent: true,
+                opacity: 0.9,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false,
+                sizeAttenuation: true,
+            });
+            const fireflySystem = new THREE.Points(fireflyGeo, fireflyMat);
+            fireflySystem.userData = { data: fireflyData };
+            scene.add(fireflySystem);
+            particles.push(fireflySystem);
+
+            // ============================
+            // SUELO CON HIERBA (opcional)
+            // ============================
+            const groundGeo = new THREE.CircleGeometry(30, 64);
+            const groundMat = new THREE.MeshStandardMaterial({
+                color: 0x1a2a0a,
+                roughness: 1,
+                metalness: 0,
+            });
+            const ground = new THREE.Mesh(groundGeo, groundMat);
+            ground.rotation.x = -Math.PI / 2;
+            ground.position.y = -5.8;
+            scene.add(ground);
+
+            // Pequeñas flores en el suelo
+            for (let i = 0; i < 40; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const radius = 3 + Math.random() * 20;
+                const gx = Math.cos(angle) * radius;
+                const gz = Math.sin(angle) * radius;
+                
+                const miniFlower = new THREE.Group();
+                const stemMini = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.02, 0.02, 0.4, 6),
+                    new THREE.MeshStandardMaterial({ color: 0x2d5016 })
+                );
+                stemMini.position.y = -5.6;
+                miniFlower.add(stemMini);
+                
+                const headMini = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.08, 8, 8),
+                    new THREE.MeshStandardMaterial({ 
+                        color: Math.random() > 0.5 ? 0xffc83c : 0xffde7a,
+                        emissive: 0x553300,
+                        emissiveIntensity: 0.4,
+                    })
+                );
+                headMini.position.y = -5.4;
+                miniFlower.add(headMini);
+                
+                miniFlower.position.set(gx, 0, gz);
+                scene.add(miniFlower);
+            }
+
+            // ============================
+            // INTERACCIÓN
+            // ============================
+            const raycaster = new THREE.Raycaster();
+            const mouse = new THREE.Vector2();
+
+            // Click en el girasol
+            function onCanvasClick(event) {
+                mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+                mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+                raycaster.setFromCamera(mouse, camera);
+                
+                // Verificar click en el grupo del girasol
+                const intersects = raycaster.intersectObjects(sunflower.children, true);
+                if (intersects.length > 0) {
+                    showMessage();
+                }
+            }
+            canvas.addEventListener('click', onCanvasClick);
+
+            function showMessage() {
+                messagePopup.classList.add('active');
+                hintText.classList.add('hidden');
+                // Efecto: la flor gira un poco al ser clickeada
+                sunflower.userData.clickPulse = 1;
+            }
+
+            closeMsg.addEventListener('click', (e) => {
+                e.stopPropagation();
+                messagePopup.classList.remove('active');
+            });
+
+            // Botón de inicio
+            startBtn.addEventListener('click', () => {
+                introOverlay.classList.add('hidden');
+            });
+            introOverlay.addEventListener('click', (e) => {
+                if (e.target === introOverlay) {
+                    introOverlay.classList.add('hidden');
+                }
+            });
+
+            // ============================
+            // CONTROLES DE CÁMARA
+            // ============================
+            let isDragging = false;
+            let prevMouse = { x: 0, y: 0 };
+            let targetRot = { x: 0, y: 0 };
+            let currentRot = { x: 0, y: 0 };
+            let targetZoom = 14;
+            let currentZoom = 14;
+
+            canvas.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                targetZoom += e.deltaY * 0.01;
+                targetZoom = Math.max(7, Math.min(22, targetZoom));
+            }, { passive: false });
+
+            canvas.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                prevMouse.x = e.clientX;
+                prevMouse.y = e.clientY;
+            });
+            window.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                const dx = e.clientX - prevMouse.x;
+                const dy = e.clientY - prevMouse.y;
+                targetRot.y += dx * 0.005;
+                targetRot.x += dy * 0.005;
+                targetRot.x = Math.max(-0.8, Math.min(0.8, targetRot.x));
+                prevMouse.x = e.clientX;
+                prevMouse.y = e.clientY;
+            });
+            window.addEventListener('mouseup', () => { isDragging = false; });
+
+            let touchStart = { x: 0, y: 0 };
+            let lastDist = 0;
+            let touching = false;
+
+            canvas.addEventListener('touchstart', (e) => {
+                if (e.touches.length === 1) {
+                    touching = true;
+                    touchStart.x = e.touches[0].clientX;
+                    touchStart.y = e.touches[0].clientY;
+                } else if (e.touches.length === 2) {
+                    const dx = e.touches[0].clientX - e.touches[1].clientX;
+                    const dy = e.touches[0].clientY - e.touches[1].clientY;
+                    lastDist = Math.sqrt(dx * dx + dy * dy);
+                }
+            }, { passive: true });
+
+            canvas.addEventListener('touchmove', (e) => {
+                if (e.touches.length === 1 && touching) {
+                    const dx = e.touches[0].clientX - touchStart.x;
+                    const dy = e.touches[0].clientY - touchStart.y;
+                    targetRot.y += dx * 0.005;
+                    targetRot.x += dy * 0.005;
+                    targetRot.x = Math.max(-0.8, Math.min(0.8, targetRot.x));
+                    touchStart.x = e.touches[0].clientX;
+                    touchStart.y = e.touches[0].clientY;
+                } else if (e.touches.length === 2) {
+                    const dx = e.touches[0].clientX - e.touches[1].clientX;
+                    const dy = e.touches[0].clientY - e.touches[1].clientY;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    const delta = (dist - lastDist) * 0.03;
+                    targetZoom = Math.max(7, Math.min(22, targetZoom - delta));
+                    lastDist = dist;
+                }
+            }, { passive: true });
+
+            canvas.addEventListener('touchend', () => { touching = false; });
+
+            // ============================
+            // ANIMACIÓN
+            // ============================
+            const clock = new THREE.Clock();
+
+            function animate() {
+                requestAnimationFrame(animate);
+                const elapsed = clock.getElapsedTime();
+
+                // Suavizado de cámara
+                currentRot.x += (targetRot.x - currentRot.x) * 0.08;
+                currentRot.y += (targetRot.y - currentRot.y) * 0.08;
+                currentZoom += (targetZoom - currentZoom) * 0.08;
+
+                const r = currentZoom;
+                const phi = currentRot.x;
+                const theta = currentRot.y;
+                camera.position.x = r * Math.sin(theta) * Math.cos(phi);
+                camera.position.y = r * Math.sin(phi) + 2;
+                camera.position.z = r * Math.cos(theta) * Math.cos(phi);
+                camera.lookAt(0, 0.5, 0);
+
+                // Balanceo natural del girasol
+                sunflower.rotation.z = Math.sin(elapsed * 0.4) * 0.05;
+                sunflower.rotation.x = Math.sin(elapsed * 0.3) * 0.03;
+                sunflower.position.y = Math.sin(elapsed * 0.5) * 0.15;
+
+                // Pulso al hacer click
+                if (sunflower.userData.clickPulse > 0) {
+                    sunflower.userData.clickPulse *= 0.92;
+                    const pulse = 1 + sunflower.userData.clickPulse * 0.15;
+                    sunflower.scale.set(1.3 * pulse, 1.3 * pulse, 1.3 * pulse);
+                }
+
+                // Animación de pétalos (ondulación suave)
+                petals.forEach((petal, i) => {
+                    const data = petal.userData;
+                    const wave = Math.sin(elapsed * 1.5 + data.baseAngle * 3) * 0.04;
+                    petal.rotation.x = (data.layer === 0 ? 0 : 0.15) + wave;
+                    petal.position.z = data.baseZ + Math.sin(elapsed * 2 + i) * 0.02;
+                });
+
+                // Partículas doradas flotando
+                const posArray = particles[0].geometry.attributes.position.array;
+                for (let i = 0; i < particleCount; i++) {
+                    posArray[i * 3 + 1] += 0.008 + Math.sin(elapsed + i) * 0.002;
+                    if (posArray[i * 3 + 1] > 15) {
+                        posArray[i * 3 + 1] = -15;
+                        posArray[i * 3] = (Math.random() - 0.5) * 40;
+                        posArray[i * 3 + 2] = (Math.random() - 0.5) * 40;
+                    }
+                }
+                particles[0].geometry.attributes.position.needsUpdate = true;
+
+                // Luciérnagas
+                const fireflySystem = particles[1];
+                const fireflyPosArr = fireflySystem.geometry.attributes.position.array;
+                const fireflyData = fireflySystem.userData.data;
+                for (let i = 0; i < fireflyCount; i++) {
+                    const d = fireflyData[i];
+                    const a = d.angle + elapsed * d.speed;
+                    fireflyPosArr[i * 3] = Math.cos(a) * d.radius;
+                    fireflyPosArr[i * 3 + 1] = d.height + Math.sin(elapsed * d.speed * 2 + d.offsetY) * 1.2;
+                    fireflyPosArr[i * 3 + 2] = Math.sin(a) * d.radius;
+                }
+                fireflySystem.geometry.attributes.position.needsUpdate = true;
+
+                renderer.render(scene, camera);
+            }
+
+            window.addEventListener('resize', () => {
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+            });
+
+            animate();
+        }
+    </script>
+</body>
+</html>
